@@ -5,7 +5,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'vim-airline/vim-airline'
     Plug 'airblade/vim-gitgutter'
     Plug 'tpope/vim-fugitive'
-    Plug 'scrooloose/nerdtree'
     Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
     Plug 'preservim/nerdcommenter'
     Plug 'windwp/nvim-autopairs'
@@ -17,12 +16,14 @@ call plug#begin('~/.vim/plugged')
     Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
     Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
     Plug 'kyazdani42/nvim-web-devicons'
+    Plug 'kyazdani42/nvim-tree.lua'
     Plug 'folke/trouble.nvim'
     Plug 'nvim-lua/plenary.nvim'
     Plug 'jose-elias-alvarez/null-ls.nvim'
     Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
     Plug 'nvim-telescope/telescope.nvim'
     Plug 'mfussenegger/nvim-jdtls'
+    Plug 'lukas-reineke/indent-blankline.nvim'
 
 call plug#end()
 
@@ -82,14 +83,6 @@ highlight Normal guibg=none
 nmap ]h <Plug>(GitGutterNextHunk)
 nmap [h <Plug>(GitGutterPrevHunk)
 
-"scrooloose/nerdtree
-nnoremap <leader>ne :NERDTreeFind<CR>
-nnoremap <leader>nt :NERDTreeToggle<CR>
-map <C-n> :NERDTreeToggle<CR>
-let g:NERDTreeShowLineNumbers=1
-let g:NERDTreeChDirMode=2
-let NERDTreeWinPos="right"
-
 " quickfix
 noremap <silent> [q :cprev<CR>
 noremap <silent> ]q :cnext<CR>
@@ -118,7 +111,7 @@ require'nvim-treesitter.configs'.setup {
   sync_install = false,
 
   -- List of parsers to ignore installing
-  ignore_install = { "javascript" },
+  ignore_install = { "swift" },
 
   highlight = {
     -- `false` will disable the whole extension
@@ -271,7 +264,24 @@ nnoremap <leader>fb <cmd>Telescope buffers<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 "------------------end telescope-----------------
-"
+
+lua << EOF
+    require("nvim-tree").setup {
+        view = {
+            width = 40,
+            side="right"
+        },
+        update_focused_file = {
+            enable = true,
+            update_cwd = true,
+        }
+}
+EOF
+
+nnoremap <C-n> :NvimTreeToggle<CR>
+nnoremap <leader>r :NvimTreeRefresh<CR>
+nnoremap <leader>n :NvimTreeFindFile<CR>
+
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
 let g:vimtex_lint_chktex_ignore_warnings=1
