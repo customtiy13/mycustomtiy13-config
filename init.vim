@@ -8,7 +8,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
     Plug 'preservim/nerdcommenter'
     Plug 'windwp/nvim-autopairs'
-    Plug 'ludovicchabant/vim-gutentags'
     Plug 'mhinz/vim-startify'
     Plug 'lervag/vimtex'
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
@@ -24,9 +23,11 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-telescope/telescope.nvim'
     Plug 'mfussenegger/nvim-jdtls'
     Plug 'lukas-reineke/indent-blankline.nvim'
+    Plug 'tpope/vim-surround'
 
 call plug#end()
 
+set termguicolors
 let mapleader = ","
 set tabstop=4 softtabstop=4
 set shiftwidth=4
@@ -75,6 +76,9 @@ set shortmess+=c
 " Give more space for displaying messages
 set cmdheight=1
 
+" easy expansion of the active file directory
+cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
+
 set background=dark
 colorscheme PaperColor
 highlight Normal guibg=none
@@ -89,6 +93,12 @@ noremap <silent> ]q :cnext<CR>
 " location list
 noremap <silent> [l :lprev<CR>
 noremap <silent> ]l :lnext<CR>
+
+" buffer list
+noremap <silent> [b :bprevious<CR>
+noremap <silent> ]b :bnext<CR>
+noremap <silent> [B :bfirst<CR>
+noremap <silent> ]B :blast<CR>
 
 "  ----------------git -----------------
 " Your vimrc
@@ -126,11 +136,21 @@ require'nvim-treesitter.configs'.setup {
     -- Instead of true it can also be a list of languages
     additional_vim_regex_highlighting = false,
   },
+    incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = 'gnn',
+      node_incremental = '<CR>',
+      node_decremental = '<BS>',
+      scope_incremental = '<TAB>',
+    }
+  },
   indent = {
     enable = false
   }
 }
 EOF
+
 "-----------------------end treesitter-------------
 
 "--------------------auto pair---------------------
@@ -209,7 +229,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'ltex','gopls','pyright', 'rust_analyzer', 'tsserver', 'ccls', 'metals' }
+local servers = { 'ltex','bashls','gopls','pyright', 'rust_analyzer', 'tsserver', 'ccls', 'metals', 'jsonls', 'lemminx' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -223,8 +243,7 @@ EOF
 
 "-------------------coq-----------------
 " set jump_to_mark to a useless key
-let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>' }
-
+let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 
 "------------------end coq-----------------
 
@@ -258,10 +277,17 @@ EOF
 
 " ------------------telescope----------------------
 " Find files using Telescope command-line sugar.
+lua << EOF
+require("telescope").setup{}
+require('telescope').load_extension('fzf')
+EOF
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
 nnoremap <leader>fg <cmd>Telescope live_grep<cr>
 nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fi <cmd>Telescope git_files<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+nnoremap <leader>fc <cmd>Telescope current_buffer_fuzzy_find<cr>
+
 
 "------------------end telescope-----------------
 
