@@ -11,6 +11,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'mhinz/vim-startify'
     Plug 'lervag/vimtex'
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
+    Plug 'nvim-treesitter/nvim-treesitter-textobjects'
     Plug 'neovim/nvim-lspconfig'
     Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
     Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
@@ -176,6 +177,50 @@ require'nvim-treesitter.configs'.setup {
   },
   indent = {
     enable = false
+  },
+  textobjects = {
+    select = {
+      enable = true,
+
+      -- Automatically jump forward to textobj, similar to targets.vim
+      lookahead = true,
+
+      keymaps = {
+        -- You can use the capture groups defined in textobjects.scm
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+      },
+    },
+    lsp_interop = {
+      enable = true,
+      border = 'none',
+      peek_definition_code = {
+        ["<leader>df"] = "@function.outer",
+        ["<leader>dF"] = "@class.outer",
+      },
+    },
+    move = {
+      enable = true,
+      set_jumps = true, -- whether to set jumps in the jumplist
+      goto_next_start = {
+        ["]m"] = "@function.outer",
+        ["]]"] = "@class.outer",
+      },
+      goto_next_end = {
+        ["]M"] = "@function.outer",
+        ["]["] = "@class.outer",
+      },
+      goto_previous_start = {
+        ["[m"] = "@function.outer",
+        ["[["] = "@class.outer",
+      },
+      goto_previous_end = {
+        ["[M"] = "@function.outer",
+        ["[]"] = "@class.outer",
+      },
+    },
   }
 }
 EOF
@@ -257,7 +302,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'ltex','bashls','gopls','pyright', 'rust_analyzer', 'tsserver',
+local servers = { 'ltex','bashls','gopls','pyright', 'tsserver',
 'ccls', 'metals', 'jsonls', 'lemminx', 'vimls'}
 for _, lsp in pairs(servers) do
   require('lspconfig')[lsp].setup {
@@ -268,6 +313,13 @@ for _, lsp in pairs(servers) do
     }
   }
 end
+
+require('lspconfig')['rust_analyzer'].setup {
+    on_attach = on_attach,
+    settings = {
+        ["rust-analyzer"] = {}
+    }
+}
 EOF
 "---------------end lsp------------------
 
@@ -317,6 +369,7 @@ nnoremap <leader>fb <cmd>Telescope buffers<cr>
 nnoremap <leader>fi <cmd>Telescope git_files<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 nnoremap <leader>fc <cmd>Telescope current_buffer_fuzzy_find<cr>
+nnoremap <leader>fd <cmd>Telescope find_files hidden=true no_ignore=true<cr>
 
 
 "------------------end telescope-----------------
