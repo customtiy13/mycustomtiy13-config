@@ -2,6 +2,7 @@
 call plug#begin('~/.vim/plugged')
 
     Plug 'NLKNguyen/papercolor-theme'
+    Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
     Plug 'vim-airline/vim-airline'
     Plug 'tpope/vim-fugitive'
     Plug 'lewis6991/gitsigns.nvim'
@@ -13,6 +14,9 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
     Plug 'neovim/nvim-lspconfig'
+    Plug 'mfussenegger/nvim-dap'
+    Plug 'theHamsta/nvim-dap-virtual-text'
+    Plug 'rcarriga/nvim-dap-ui'
     Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
     Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
     Plug 'kyazdani42/nvim-web-devicons'
@@ -81,8 +85,21 @@ set cmdheight=1
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 
 set background=dark
-colorscheme PaperColor
-highlight Normal guibg=none
+" colorscheme PaperColor
+" highlight Normal guibg=none
+" Example config in VimScript
+let g:tokyonight_style = "night"
+let g:tokyonight_italic_functions = 1
+let g:tokyonight_sidebars = [ "qf", "vista_kind", "terminal", "packer" ]
+
+" Change the "hint" color to the "orange" color, and make the "error" color bright red
+let g:tokyonight_colors = {
+  \ 'hint': 'orange',
+  \ 'error': '#ff0000'
+\ }
+
+" Load the colorscheme
+colorscheme tokyonight
 
 " quickfix
 noremap <silent> [q :cprev<CR>
@@ -140,6 +157,10 @@ EOF
 " ----------------end git----------------
 
 set clipboard+=unnamedplus
+
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
+autocmd BufReadPost,FileReadPost * normal zR
 
 "------------------------treesitter--------------
 lua <<EOF
@@ -298,6 +319,23 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
   vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
   vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
+
+    if client.supports_method "textDocument/documentHighlight" then
+        vim.api.nvim_create_augroup("lsp_document_highlight", { clear = true })
+        vim.api.nvim_clear_autocmds { buffer = bufnr, group = "lsp_document_highlight" }
+        vim.api.nvim_create_autocmd("CursorHold", {
+            callback = vim.lsp.buf.document_highlight,
+            buffer = bufnr,
+            group = "lsp_document_highlight",
+            desc = "Document Highlight",
+        })
+        vim.api.nvim_create_autocmd("CursorMoved", {
+            callback = vim.lsp.buf.clear_references,
+            buffer = bufnr,
+            group = "lsp_document_highlight",
+            desc = "Clear All the References",
+        })
+    end
 end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -374,6 +412,13 @@ nnoremap <leader>fd <cmd>Telescope find_files hidden=true no_ignore=true<cr>
 
 "------------------end telescope-----------------
 
+"-------------------start dap----------------
+lua <<EOF
+require("dapui").setup()
+require("nvim-dap-virtual-text").setup()
+EOF
+"---------------------end dap-----------------------
+
 lua << EOF
     require("nvim-tree").setup {
         view = {
@@ -394,4 +439,6 @@ nnoremap <leader>n :NvimTreeFindFile<CR>
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
 let g:vimtex_lint_chktex_ignore_warnings=1
+nnoremap * :keepjumps normal! mi*`i<CR>
+
 
