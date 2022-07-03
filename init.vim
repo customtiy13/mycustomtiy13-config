@@ -1,8 +1,8 @@
 " Plug
 call plug#begin('~/.vim/plugged')
 
-    Plug 'NLKNguyen/papercolor-theme'
-    Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
+    " Plug 'NLKNguyen/papercolor-theme'
+    Plug 'marko-cerovac/material.nvim'
     Plug 'vim-airline/vim-airline'
     Plug 'tpope/vim-fugitive'
     Plug 'lewis6991/gitsigns.nvim'
@@ -84,22 +84,11 @@ set cmdheight=1
 " easy expansion of the active file directory
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 
+"highlight Normal guibg=none
 set background=dark
-" colorscheme PaperColor
-" highlight Normal guibg=none
-" Example config in VimScript
-let g:tokyonight_style = "night"
-let g:tokyonight_italic_functions = 1
-let g:tokyonight_sidebars = [ "qf", "vista_kind", "terminal", "packer" ]
+let g:material_style = "darker"
+colorscheme material
 
-" Change the "hint" color to the "orange" color, and make the "error" color bright red
-let g:tokyonight_colors = {
-  \ 'hint': 'orange',
-  \ 'error': '#ff0000'
-\ }
-
-" Load the colorscheme
-colorscheme tokyonight
 
 " quickfix
 noremap <silent> [q :cprev<CR>
@@ -157,10 +146,6 @@ EOF
 " ----------------end git----------------
 
 set clipboard+=unnamedplus
-
-set foldmethod=expr
-set foldexpr=nvim_treesitter#foldexpr()
-autocmd BufReadPost,FileReadPost * normal zR
 
 "------------------------treesitter--------------
 lua <<EOF
@@ -320,21 +305,14 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
   vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
 
-    if client.supports_method "textDocument/documentHighlight" then
-        vim.api.nvim_create_augroup("lsp_document_highlight", { clear = true })
-        vim.api.nvim_clear_autocmds { buffer = bufnr, group = "lsp_document_highlight" }
-        vim.api.nvim_create_autocmd("CursorHold", {
-            callback = vim.lsp.buf.document_highlight,
-            buffer = bufnr,
-            group = "lsp_document_highlight",
-            desc = "Document Highlight",
-        })
-        vim.api.nvim_create_autocmd("CursorMoved", {
-            callback = vim.lsp.buf.clear_references,
-            buffer = bufnr,
-            group = "lsp_document_highlight",
-            desc = "Clear All the References",
-        })
+    if client.resolved_capabilities.document_highlight then
+        vim.api.nvim_exec([[
+        augroup lsp_document_highlight
+          autocmd! * <buffer>
+          autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+          auto CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+        augroup END
+        ]], false)
     end
 end
 
@@ -439,6 +417,5 @@ nnoremap <leader>n :NvimTreeFindFile<CR>
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
 let g:vimtex_lint_chktex_ignore_warnings=1
+
 nnoremap * :keepjumps normal! mi*`i<CR>
-
-

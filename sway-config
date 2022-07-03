@@ -117,7 +117,13 @@ bindsym $mod2+l exec swaylock -f -i /home/example/Pictures/plant-onion.png
     # start librewolf
     bindsym $mod+o exec librewolf
     # start element
-    bindsym $mod2+e exec element-desktop --enable-features=UseOzonePlatform --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
+    #bindsym $mod2+e exec element-desktop --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
+    bindsym $mod2+e exec http_proxy=socks5h://127.0.0.1:1080 https_proxy=socks5h://127.0.0.1:1080 nheko
+
+    # start music
+    bindsym $mod2+m exec /opt/YesPlayMusic/yesplaymusic --enable-features=UseOzonePlatform --ozone-platform=wayland --gtk-version=4
+    # start rss
+    bindsym $mod2+f exec https_proxy=socks5://127.0.0.1:1080 http_proxy=socks5://127.0.0.1:1080 newsflash
 
     # Kill focused window
     bindsym $mod+Shift+c kill
@@ -211,13 +217,13 @@ bindsym $mod2+l exec swaylock -f -i /home/example/Pictures/plant-onion.png
     # You can "split" the current object of your focus with
     # $mod+b or $mod+v, for horizontal and vertical splits
     # respectively.
-    bindsym $mod+Shift+b splith
+    bindsym $mod+s splith
     bindsym $mod+v splitv
 
     # Switch the current container between different layout styles
     bindsym $mod+Shift+s layout stacking
     bindsym $mod+Shift+w layout tabbed
-    bindsym $mod+t layout toggle split
+    bindsym $mod+e layout toggle split
 
     # Make the current focus fullscreen
     bindsym $mod+Shift+f fullscreen
@@ -294,17 +300,16 @@ bindsym XF86Search exec bemenu-run
 
 # (wev) show keyname
 # alternative volume keys
-bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym $mod2+m exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
-bindsym KP_Add exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym KP_Subtract exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+#bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+#bindsym $mod+s exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+#bindsym KP_Add exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+#bindsym KP_Subtract exec pactl set-sink-volume @DEFAULT_SINK@ -5%
 
 
 # screenshoot and copy to clipboard
 # grim - | wl-copy
 # install slurp grim
-bindsym $mod+q exec grim -g "$(slurp)" - | wl-copy
-bindsym $mod2+q exec grim -g "$(slurp)" ~/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png
+bindsym $mod+q exec grim -g "$(slurp)" - | swappy -f -
 
 input "type:keyboard" {
     xkb_options ctrl:nocaps
@@ -350,3 +355,4 @@ mode "swap" {
 bindsym $mod+Shift+i mark --add "swapee"; mode "swap"
 
 ########## launch app at the end##########
+#xwayland enable
