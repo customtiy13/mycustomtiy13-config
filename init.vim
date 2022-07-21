@@ -28,7 +28,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'nvim-telescope/telescope.nvim'
     Plug 'mfussenegger/nvim-jdtls'
     Plug 'lukas-reineke/indent-blankline.nvim'
-    Plug 'tpope/vim-surround'
+    Plug 'kylechui/nvim-surround'
 
 call plug#end()
 
@@ -89,6 +89,8 @@ set background=dark
 let g:material_style = "darker"
 colorscheme material
 
+highlight Normal guibg=none
+highlight NonText guibg=none
 
 " quickfix
 noremap <silent> [q :cprev<CR>
@@ -390,6 +392,15 @@ nnoremap <leader>fd <cmd>Telescope find_files hidden=true no_ignore=true<cr>
 
 "------------------end telescope-----------------
 
+
+"------------------start nvim-surround----------------
+lua << EOF
+    require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+    })
+EOF
+"-----------------end nvim-surround------------------
+
 "-------------------start dap----------------
 lua <<EOF
 require("dapui").setup()
@@ -419,3 +430,4 @@ let g:mkdp_page_title = ' '
 let g:vimtex_lint_chktex_ignore_warnings=1
 
 nnoremap * :keepjumps normal! mi*`i<CR>
+
