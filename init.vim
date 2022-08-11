@@ -1,9 +1,8 @@
 " Plug
 call plug#begin('~/.vim/plugged')
 
-    " Plug 'NLKNguyen/papercolor-theme'
     Plug 'marko-cerovac/material.nvim'
-    Plug 'vim-airline/vim-airline'
+    Plug 'nvim-lualine/lualine.nvim'
     Plug 'tpope/vim-fugitive'
     Plug 'lewis6991/gitsigns.nvim'
     Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
@@ -29,6 +28,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'mfussenegger/nvim-jdtls'
     Plug 'lukas-reineke/indent-blankline.nvim'
     Plug 'kylechui/nvim-surround'
+    Plug 'rmagatti/goto-preview'
 
 call plug#end()
 
@@ -62,7 +62,7 @@ set history=1000
 set cursorline
 set cursorcolumn
 
-syntax on
+" syntax on
 
 " clear highlight
 if maparg('<C-L>', 'n') ==# ''
@@ -104,6 +104,11 @@ noremap <silent> [b :bprevious<CR>
 noremap <silent> ]b :bnext<CR>
 noremap <silent> [B :bfirst<CR>
 noremap <silent> ]B :blast<CR>
+
+
+lua << END
+require('lualine').setup()
+END
 
 "  ----------------git -----------------
 lua << EOF
@@ -150,7 +155,7 @@ EOF
 set clipboard+=unnamedplus
 
 "------------------------treesitter--------------
-lua <<EOF
+lua << EOF
 require'nvim-treesitter.configs'.setup {
   -- One of "all", "maintained" (parsers with maintainers), or a list of languages
   ensure_installed = "all",
@@ -236,7 +241,7 @@ EOF
 "-----------------------end treesitter-------------
 
 "--------------------auto pair---------------------
-lua <<EOF
+lua << EOF
 require('nvim-autopairs').setup({
   disable_filetype = { "TelescopePrompt" , "vim" },
 })
@@ -419,6 +424,11 @@ lua << EOF
             update_cwd = true,
         }
 }
+EOF
+
+
+lua << EOF
+require('goto-preview').setup {default_mappings = true}
 EOF
 
 nnoremap <C-n> :NvimTreeToggle<CR>
