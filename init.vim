@@ -29,6 +29,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'lukas-reineke/indent-blankline.nvim'
     Plug 'kylechui/nvim-surround'
     Plug 'rmagatti/goto-preview'
+    Plug 'simrat39/symbols-outline.nvim'
 
 call plug#end()
 
@@ -428,8 +429,18 @@ EOF
 
 
 lua << EOF
-require('goto-preview').setup {default_mappings = true}
+require('goto-preview').setup {
+    default_mappings = true;
+      width = 120; -- Width of the floating window
+  height = 50; -- Height of the floating window
+    }
 EOF
+
+"----------------------------outline-------------------
+lua << EOF
+vim.g.symbols_outline = {}
+EOF
+"------------------------end outline-------------------
 
 nnoremap <C-n> :NvimTreeToggle<CR>
 nnoremap <leader>r :NvimTreeRefresh<CR>
