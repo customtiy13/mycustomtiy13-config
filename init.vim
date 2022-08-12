@@ -154,9 +154,13 @@ EOF
 " ----------------end git----------------
 
 set clipboard+=unnamedplus
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
+autocmd BufReadPost,FileReadPost * normal zR
 
 "------------------------treesitter--------------
 lua << EOF
+
 require'nvim-treesitter.configs'.setup {
   -- One of "all", "maintained" (parsers with maintainers), or a list of languages
   ensure_installed = "all",
@@ -245,6 +249,7 @@ EOF
 lua << EOF
 require('nvim-autopairs').setup({
   disable_filetype = { "TelescopePrompt" , "vim" },
+  enable_check_bracket_line = false,
 })
 local npairs = require("nvim-autopairs")
 
