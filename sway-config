@@ -41,6 +41,7 @@ bindsym $mod2+Control+Up move workspace to output up
 output DP-1 scale 2 pos 1080 427
 output HDMI-A-2 transform 90 pos 0 0
 
+
 # bind workspace to monitors
 workspace 1 output DP-1
 workspace 2 output DP-1
@@ -63,7 +64,7 @@ default_border pixel 2
 exec_always gsettings set org.gnome.desktop.interface gtk-key-theme "Emacs"
 
 # background pic
-output * bg /home/example/Pictures/free_as_in_freedom.png fill
+output * bg /home/mys/Pictures/free_as_in_freedom.png fill
 
 #
 # Example configuration:
@@ -77,13 +78,13 @@ output * bg /home/example/Pictures/free_as_in_freedom.png fill
 # Example configuration:
 #
 exec swayidle -w \
-	timeout 280 'swaylock -f -i /home/example/Pictures/plant-onion.png' \
+	timeout 280 'swaylock -f -i /home/mys/Pictures/plant-onion.png' \
 	timeout 285 'swaymsg "output * dpms off"' \
 	resume 'swaymsg "output * dpms on"' \
-    before-sleep 'swaylock -f -c /home/example/Pictures/plant-onion'
+    before-sleep 'swaylock -f -c /home/mys/Pictures/plant-onion'
 
 
-bindsym $mod2+l exec swaylock -f -i /home/example/Pictures/plant-onion.png
+bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
 
 #
 # This will lock your screen after 300 seconds of inactivity, then turn off
@@ -117,8 +118,8 @@ bindsym $mod2+l exec swaylock -f -i /home/example/Pictures/plant-onion.png
     # start librewolf
     bindsym $mod+o exec librewolf
     # start element
-    #bindsym $mod2+e exec element-desktop --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
-    bindsym $mod2+e exec http_proxy=socks5h://127.0.0.1:1080 https_proxy=socks5h://127.0.0.1:1080 nheko
+    bindsym $mod2+e exec element-desktop --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
+    #bindsym $mod2+e exec http_proxy=socks5h://127.0.0.1:1080 https_proxy=socks5h://127.0.0.1:1080 nheko
 
     # start music
     bindsym $mod2+m exec /opt/YesPlayMusic/yesplaymusic --enable-features=UseOzonePlatform --ozone-platform=wayland --gtk-version=4
@@ -223,7 +224,7 @@ bindsym $mod2+l exec swaylock -f -i /home/example/Pictures/plant-onion.png
     # Switch the current container between different layout styles
     bindsym $mod+Shift+s layout stacking
     bindsym $mod+Shift+w layout tabbed
-    bindsym $mod+e layout toggle split
+    bindsym $mod+c layout toggle split
 
     # Make the current focus fullscreen
     bindsym $mod+Shift+f fullscreen
@@ -300,7 +301,7 @@ bindsym XF86Search exec bemenu-run
 
 # (wev) show keyname
 # alternative volume keys
-#bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 #bindsym $mod+s exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
 #bindsym KP_Add exec pactl set-sink-volume @DEFAULT_SINK@ +5%
 #bindsym KP_Subtract exec pactl set-sink-volume @DEFAULT_SINK@ -5%
@@ -355,4 +356,4 @@ mode "swap" {
 bindsym $mod+Shift+i mark --add "swapee"; mode "swap"
 
 ########## launch app at the end##########
-#xwayland enable
+xwayland enable
