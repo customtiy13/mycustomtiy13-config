@@ -12,6 +12,8 @@ call plug#begin('~/.vim/plugged')
     Plug 'lervag/vimtex'
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+    Plug 'nvim-treesitter/nvim-treesitter-context'
+    Plug 'p00f/nvim-ts-rainbow'
     Plug 'neovim/nvim-lspconfig'
     Plug 'mfussenegger/nvim-dap'
     Plug 'theHamsta/nvim-dap-virtual-text'
@@ -28,8 +30,11 @@ call plug#begin('~/.vim/plugged')
     Plug 'mfussenegger/nvim-jdtls'
     Plug 'lukas-reineke/indent-blankline.nvim'
     Plug 'kylechui/nvim-surround'
+    Plug 'sindrets/diffview.nvim'
     Plug 'rmagatti/goto-preview'
     Plug 'simrat39/symbols-outline.nvim'
+    Plug 'RRethy/vim-illuminate'
+
 
 call plug#end()
 
@@ -148,19 +153,18 @@ require('gitsigns').setup{
     map('n', '<leader>hd', gs.diffthis)
     map('n', '<leader>hD', function() gs.diffthis('~') end)
     map('n', '<leader>td', gs.toggle_deleted)
-    end
+
+    -- Text object
+    map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+  end
 }
 EOF
 " ----------------end git----------------
 
 set clipboard+=unnamedplus
-set foldmethod=expr
-set foldexpr=nvim_treesitter#foldexpr()
-autocmd BufReadPost,FileReadPost * normal zR
 
 "------------------------treesitter--------------
 lua << EOF
-
 require'nvim-treesitter.configs'.setup {
   -- One of "all", "maintained" (parsers with maintainers), or a list of languages
   ensure_installed = "all",
@@ -195,6 +199,14 @@ require'nvim-treesitter.configs'.setup {
   },
   indent = {
     enable = false
+  },
+    rainbow = {
+    enable = true,
+    -- disable = { "jsx", "cpp" }, list of languages you want to disable the plugin for
+    extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+    max_file_lines = nil, -- Do not enable for files with more than n lines, int
+    -- colors = {}, -- table of hex strings
+    -- termcolors = {} -- table of colour name strings
   },
   textobjects = {
     select = {
@@ -241,7 +253,14 @@ require'nvim-treesitter.configs'.setup {
     },
   }
 }
+
+vim.wo.foldmethod = 'expr'
+vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.wo.foldlevel = 99
+
+require'treesitter-context'.setup()
 EOF
+
 
 "-----------------------end treesitter-------------
 
@@ -249,7 +268,6 @@ EOF
 lua << EOF
 require('nvim-autopairs').setup({
   disable_filetype = { "TelescopePrompt" , "vim" },
-  enable_check_bracket_line = false,
 })
 local npairs = require("nvim-autopairs")
 
@@ -316,23 +334,14 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
   vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
   vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-  vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
-
-    if client.resolved_capabilities.document_highlight then
-        vim.api.nvim_exec([[
-        augroup lsp_document_highlight
-          autocmd! * <buffer>
-          autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-          auto CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-        augroup END
-        ]], false)
-    end
+  vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+  
 end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local servers = { 'ltex','bashls','gopls','pyright', 'tsserver',
-'ccls', 'metals', 'jsonls', 'lemminx', 'vimls'}
+'ccls', 'jsonls', 'lemminx', 'vimls', 'rust_analyzer'}
 for _, lsp in pairs(servers) do
   require('lspconfig')[lsp].setup {
     on_attach = on_attach,
@@ -353,8 +362,8 @@ EOF
 "---------------end lsp------------------
 
 "-------------------coq-----------------
-" set jump_to_mark to a useless key
-let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
+" set jump_to_mark to a key
+let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-y>'}
 
 "------------------end coq-----------------
 
@@ -411,6 +420,12 @@ lua << EOF
     })
 EOF
 "-----------------end nvim-surround------------------
+"
+"===================symbol outline----------------
+lua << EOF
+require("symbols-outline").setup()
+EOF
+"--------------------symbol outline end-------------------
 
 "-------------------start dap----------------
 lua <<EOF
@@ -418,6 +433,10 @@ require("dapui").setup()
 require("nvim-dap-virtual-text").setup()
 EOF
 "---------------------end dap-----------------------
+
+
+"---------------------start word illuminate --------------------
+"----------------------end word illuminate
 
 lua << EOF
     require("nvim-tree").setup {
@@ -434,18 +453,8 @@ EOF
 
 
 lua << EOF
-require('goto-preview').setup {
-    default_mappings = true;
-      width = 120; -- Width of the floating window
-  height = 50; -- Height of the floating window
-    }
+require('goto-preview').setup {default_mappings = true}
 EOF
-
-"----------------------------outline-------------------
-lua << EOF
-vim.g.symbols_outline = {}
-EOF
-"------------------------end outline-------------------
 
 nnoremap <C-n> :NvimTreeToggle<CR>
 nnoremap <leader>r :NvimTreeRefresh<CR>
@@ -454,6 +463,8 @@ nnoremap <leader>n :NvimTreeFindFile<CR>
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
 let g:vimtex_lint_chktex_ignore_warnings=1
+let g:vimtex_compiler_latexmk_engines = {'_':'-xelatex'}
+let g:vimtex_compiler_latexrun_engines ={'_':'xelatex'}
 
 nnoremap * :keepjumps normal! mi*`i<CR>
 
