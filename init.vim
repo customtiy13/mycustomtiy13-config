@@ -1,7 +1,8 @@
 " Plug
 call plug#begin('~/.vim/plugged')
 
-    Plug 'marko-cerovac/material.nvim'
+    " Plug 'marko-cerovac/material.nvim'
+    Plug 'ray-x/aurora'
     Plug 'nvim-lualine/lualine.nvim'
     Plug 'tpope/vim-fugitive'
     Plug 'lewis6991/gitsigns.nvim'
@@ -34,6 +35,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'rmagatti/goto-preview'
     Plug 'simrat39/symbols-outline.nvim'
     Plug 'RRethy/vim-illuminate'
+    Plug 'L3MON4D3/LuaSnip'
 
 
 call plug#end()
@@ -91,9 +93,15 @@ set cmdheight=1
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 
 "highlight Normal guibg=none
-set background=dark
-let g:material_style = "darker"
-colorscheme material
+"set background=dark
+"let g:material_style = "darker"
+"colorscheme material
+let g:aurora_italic = 1     " italic
+let g:aurora_transparent = 1     " transparent
+let g:aurora_bold = 1     " bold
+let g:aurora_darker = 1     " darker background
+
+colorscheme aurora
 
 highlight Normal guibg=none
 highlight NonText guibg=none
@@ -204,7 +212,7 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
     -- disable = { "jsx", "cpp" }, list of languages you want to disable the plugin for
     extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
-    max_file_lines = nil, -- Do not enable for files with more than n lines, int
+    max_file_lines = 200, -- Do not enable for files with more than n lines, int
     -- colors = {}, -- table of hex strings
     -- termcolors = {} -- table of colour name strings
   },
@@ -254,6 +262,7 @@ require'nvim-treesitter.configs'.setup {
   }
 }
 
+-- zc folding
 vim.wo.foldmethod = 'expr'
 vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
 vim.wo.foldlevel = 99
@@ -363,7 +372,7 @@ EOF
 
 "-------------------coq-----------------
 " set jump_to_mark to a key
-let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-y>'}
+let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 
 "------------------end coq-----------------
 
@@ -451,6 +460,29 @@ lua << EOF
 }
 EOF
 
+" ----------------luasnip---------
+lua << EOF
+require("luasnip").config.set_config({
+    enable_autosnippets = true,
+    store_selection_keys = "<Tab>",
+})
+EOF
+" Expand or jump in insert mode
+imap <silent><expr> <Tab> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<Tab>' 
+ 
+" Jump forward through tabstops in visual mode
+smap <silent><expr> <Tab> luasnip#jumpable(1) ? '<Plug>luasnip-jump-next' : '<Tab>'
+" Jump backward through snippet tabstops with Shift-Tab (for example)
+imap <silent><expr> <S-Tab> luasnip#jumpable(-1) ? '<Plug>luasnip-jump-prev' : '<S-Tab>'
+smap <silent><expr> <S-Tab> luasnip#jumpable(-1) ? '<Plug>luasnip-jump-prev' : '<S-Tab>'
+" Cycle forward through choice nodes with Control-f (for example)
+imap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
+smap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
+
+
+
+"  -----------------end luasnip------------
+
 
 lua << EOF
 require('goto-preview').setup {default_mappings = true}
@@ -462,9 +494,28 @@ nnoremap <leader>n :NvimTreeFindFile<CR>
 
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
-let g:vimtex_lint_chktex_ignore_warnings=1
-let g:vimtex_compiler_latexmk_engines = {'_':'-xelatex'}
-let g:vimtex_compiler_latexrun_engines ={'_':'xelatex'}
+let g:vimtex_quickfix_ignore_filters = [
+            \'Warning.*Fandol', 
+            \'Overfull', 'Underfull',
+            \'Warning.*Font',
+            \'Warning.*font'
+      \]
+let g:vimtex_compiler_latexmk_engines = {
+            \'_':'-xelatex --shell-escape',
+            \'xelatex': '-xelatex --shell-escape',
+            \'pdflatex': '-pdf --shell-escape',
+            \'lualatex' : '-lualatex --shell-escape'
+            \}
 
 nnoremap * :keepjumps normal! mi*`i<CR>
 
+lua << EOF
+vim.diagnostic.config({
+  virtual_text = false,
+})
+
+EOF
+
+setlocal spell
+set spelllang=nl,en_us,cjk
+inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
