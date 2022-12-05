@@ -16,11 +16,14 @@ set $down j
 set $up k
 set $right l
 # Your preferred terminal emulator
-set $term /usr/bin/alacritty
+set $term WINIT_UNIX_BACKEND=x11 /usr/bin/alacritty
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
-set $menu wofi -I --show run
+# set $menu wofi -I --show run
+set $menu tofi-run | xargs swaymsg exec --
+bindsym $mod+d exec $menu
+
 
 font pango: SourceCodePro Medium 14
 ### Output configuration
@@ -38,16 +41,20 @@ bindsym $mod2+Control+Left move workspace to output left
 bindsym $mod2+Control+Down move workspace to output down
 bindsym $mod2+Control+Up move workspace to output up
 
-output DP-1 scale 2 pos 1080 427
-output HDMI-A-2 transform 90 pos 0 0
+#output DP-1 scale 2 pos 1080 427
+#output HDMI-A-2 prime
+
+# 804 monitor config
+output eDP-1 pos 1920 0
+output HDMI-A-2 pos 0 0
 
 
 # bind workspace to monitors
-workspace 1 output DP-1
-workspace 2 output DP-1
-workspace 3 output DP-1
-workspace 4 output DP-1
-workspace  output DP-1
+workspace 1 output eDP-1
+workspace 2 output eDP-1
+workspace 3 output eDP-1
+workspace 4 output eDP-1
+workspace music output eDP-1
 workspace 6 output HDMI-A-2
 workspace 7 output HDMI-A-2
 
@@ -124,7 +131,7 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
     # start music
     bindsym $mod2+m exec /opt/YesPlayMusic/yesplaymusic --enable-features=UseOzonePlatform --ozone-platform=wayland --gtk-version=4
     # start rss
-    bindsym $mod2+f exec https_proxy=socks5://127.0.0.1:1080 http_proxy=socks5://127.0.0.1:1080 newsflash
+    #bindsym $mod2+f exec https_proxy=socks5://127.0.0.1:1080 http_proxy=socks5://127.0.0.1:1080 newsflash
 
     # Kill focused window
     bindsym $mod+Shift+c kill
@@ -133,7 +140,7 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
     bindsym $mod+i exec $menu
 
     # start sway overview
-    exec rm -f /tmp/sovpipe && mkfifo /tmp/sovpipe && tail -f /tmp/sovpipe | sov
+    # exec rm -f /tmp/sovpipe && mkfifo /tmp/sovpipe && tail -f /tmp/sovpipe | sov
 
     # Drag floating windows by holding down $mod and left mouse button.
     # Resize them with right mouse button + $mod.
@@ -176,58 +183,41 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
 # Workspaces:
 #
     # Switch to workspace
-    bindsym --no-repeat $mod+1 workspace number 1; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+2 workspace number 2; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+3 workspace number 3; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+4 workspace number 4; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+5 workspace number 5; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+6 workspace number 6; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+7 workspace number 7; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+8 workspace number 8; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+9 workspace number 9; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+0 workspace number 10; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+Shift+t workspace ; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+Shift+m workspace ; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+Shift+d workspace ⓦ; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod+Shift+y workspace !; exec "echo 1 > /tmp/sovpipe"
+    bindsym --no-repeat $mod+1 workspace number 1; 
+    bindsym --no-repeat $mod+2 workspace number 2; 
+    bindsym --no-repeat $mod+3 workspace number 3; 
+    bindsym --no-repeat $mod+4 workspace number 4; 
+    bindsym --no-repeat $mod+5 workspace number 5; 
+    bindsym --no-repeat $mod+6 workspace number 6; 
+    bindsym --no-repeat $mod+7 workspace number 7; 
+    bindsym --no-repeat $mod+8 workspace number 8; 
+    bindsym --no-repeat $mod+9 workspace number 9; 
+    bindsym --no-repeat $mod+0 workspace number 10;
+    bindsym --no-repeat $mod+Shift+t workspace ; 
+    bindsym --no-repeat $mod+Shift+m workspace 🎧;
+    bindsym --no-repeat $mod+Shift+d workspace ⓦ; 
+    bindsym --no-repeat $mod+Shift+y workspace !; 
+    bindsym $mod2+f workspace  
+    bindsym $mod2+w workspace 
+    bindsym $mod2+c workspace ⛩
+    bindsym $mod2+z workspace 🗞
+    bindsym $mod2+g workspace GG
+    bindsym $mod2+b workspace 🕮
+    bindsym $mod2+o workspace 📝
+    bindsym $mod2+p workspace ⬜
+    bindsym $mod2+s workspace obs
+    bindsym $mod2+n workspace note
 
-    bindsym --no-repeat $mod2+1 workspace number 11; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+2 workspace number 12; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+3 workspace number 13; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+4 workspace number 14; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+5 workspace number 15; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+6 workspace number 16; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+7 workspace number 17; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+8 workspace number 18; exec "echo 1 > /tmp/sovpipe"
-    bindsym --no-repeat $mod2+9 workspace number 19; exec "echo 1 > /tmp/sovpipe"
+    bindsym --no-repeat $mod2+1 workspace number 11; 
+    bindsym --no-repeat $mod2+2 workspace number 12; 
+    bindsym --no-repeat $mod2+3 workspace number 13; 
+    bindsym --no-repeat $mod2+4 workspace number 14; 
+    bindsym --no-repeat $mod2+5 workspace number 15; 
+    bindsym --no-repeat $mod2+6 workspace number 16; 
+    bindsym --no-repeat $mod2+7 workspace number 17; 
+    bindsym --no-repeat $mod2+8 workspace number 18; 
+    bindsym --no-repeat $mod2+9 workspace number 19; 
 
-    bindsym --no-repeat $mod+w exec "echo 1 > /tmp/sovpipe"
-    bindsym --release $mod+w exec "echo 0 > /tmp/sovpipe"
-
-    bindsym --release $mod+1 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+2 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+3 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+4 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+5 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+6 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+7 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+8 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+9 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+0 exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+Shift+t  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+Shift+m  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+Shift+d  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod+Shift+y  exec "echo 0 > /tmp/sovpipe"
-
-    bindsym --release $mod2+1  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+2  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+3  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+4  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+5  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+6  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+7  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+8  exec "echo 0 > /tmp/sovpipe"
-    bindsym --release $mod2+9  exec "echo 0 > /tmp/sovpipe"
 
     # Move focused container to workspace
     bindsym $mod+Shift+1 move container to workspace number 1
@@ -284,6 +274,8 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
     exec $term --title terminal_scratchpad --command /usr/bin/tmux
 
     for_window [title="terminal_scratchpad"] move scratchpad
+
+    # for_window [app_id="firefox"] floating enable
 #
 # Resizing containers:
 #
@@ -385,6 +377,8 @@ mode "swap" {
 }
 
 bindsym $mod+Shift+i mark --add "swapee"; mode "swap"
+
+
 
 ########## launch app at the end##########
 xwayland enable
