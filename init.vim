@@ -36,6 +36,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'simrat39/symbols-outline.nvim'
     Plug 'RRethy/vim-illuminate'
     Plug 'L3MON4D3/LuaSnip'
+    Plug 'ggandor/leap.nvim'
 
 
 call plug#end()
@@ -76,6 +77,9 @@ set cursorcolumn
 if maparg('<C-L>', 'n') ==# ''
     nnoremap <silent> <C-L> :nohlsearch<C-R>=has('diff')?'<Bar>diffupdate':''<CR><CR><C-L>
 endif
+
+nnoremap <C-d> <C-d>zz
+nnoremap <C-u> <C-u>zz
 
 noremap <Leader>W :w !sudo tee % > /dev/null
 
@@ -494,6 +498,7 @@ nnoremap <leader>n :NvimTreeFindFile<CR>
 
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
+let g:mkdp_browser = ''
 let g:vimtex_quickfix_ignore_filters = [
             \'Warning.*Fandol', 
             \'Overfull', 'Underfull',
@@ -513,8 +518,8 @@ lua << EOF
 vim.diagnostic.config({
   virtual_text = false,
 })
-
 EOF
+lua require('leap').add_default_mappings()
 
 setlocal spell
 set spelllang=nl,en_us,cjk
