@@ -496,6 +496,11 @@ nnoremap <C-n> :NvimTreeToggle<CR>
 nnoremap <leader>r :NvimTreeRefresh<CR>
 nnoremap <leader>n :NvimTreeFindFile<CR>
 
+lua << EOF
+    vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
+    vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+EOF
+
 let g:vimtex_view_method = 'zathura'
 let g:mkdp_page_title = ' '
 let g:mkdp_browser = ''
@@ -521,6 +526,7 @@ vim.diagnostic.config({
 EOF
 lua require('leap').add_default_mappings()
 
-setlocal spell
+
+set spell
 set spelllang=nl,en_us,cjk
 inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
