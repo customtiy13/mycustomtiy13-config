@@ -1,7 +1,6 @@
 " Plug
 call plug#begin('~/.vim/plugged')
 
-    " Plug 'marko-cerovac/material.nvim'
     Plug 'ray-x/aurora'
     Plug 'nvim-lualine/lualine.nvim'
     Plug 'tpope/vim-fugitive'
@@ -23,7 +22,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
     Plug 'kyazdani42/nvim-web-devicons'
     Plug 'kyazdani42/nvim-tree.lua'
-    Plug 'folke/trouble.nvim'
     Plug 'nvim-lua/plenary.nvim'
     Plug 'jose-elias-alvarez/null-ls.nvim'
     Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
@@ -37,6 +35,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'RRethy/vim-illuminate'
     Plug 'L3MON4D3/LuaSnip'
     Plug 'ggandor/leap.nvim'
+    Plug 'folke/zen-mode.nvim'
 
 
 call plug#end()
@@ -81,8 +80,6 @@ endif
 nnoremap <C-d> <C-d>zz
 nnoremap <C-u> <C-u>zz
 
-noremap <Leader>W :w !sudo tee % > /dev/null
-
 " Having longer updatetime (default is 4000 ms = 4s) leads to noticeable 
 " delays and poor experience
 set updatetime=50
@@ -96,10 +93,6 @@ set cmdheight=1
 " easy expansion of the active file directory
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 
-"highlight Normal guibg=none
-"set background=dark
-"let g:material_style = "darker"
-"colorscheme material
 let g:aurora_italic = 1     " italic
 let g:aurora_transparent = 1     " transparent
 let g:aurora_bold = 1     " bold
@@ -127,6 +120,7 @@ noremap <silent> ]B :blast<CR>
 lua << END
 require('lualine').setup()
 END
+
 
 "  ----------------git -----------------
 lua << EOF
@@ -354,7 +348,7 @@ end
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local servers = { 'ltex','bashls','gopls','pyright', 'tsserver',
-'ccls', 'jsonls', 'lemminx', 'vimls', 'rust_analyzer'}
+'ccls', 'jsonls', 'lemminx', 'vimls'}
 for _, lsp in pairs(servers) do
   require('lspconfig')[lsp].setup {
     on_attach = on_attach,
@@ -379,22 +373,6 @@ EOF
 let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 
 "------------------end coq-----------------
-
-" -----------------trouble-------------------
-lua << EOF
-  require("trouble").setup {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
-  }
-EOF
-nnoremap <leader>xx <cmd>TroubleToggle<cr>
-nnoremap <leader>xw <cmd>TroubleToggle workspace_diagnostics<cr>
-nnoremap <leader>xd <cmd>TroubleToggle document_diagnostics<cr>
-nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
-nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
-nnoremap gR <cmd>TroubleToggle lsp_references<cr>
-"-----------------end trouble---------------
 
 "----------------------null-ls-----------------
 lua << EOF
@@ -421,6 +399,13 @@ nnoremap <leader>fi <cmd>Telescope git_files<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 nnoremap <leader>fc <cmd>Telescope current_buffer_fuzzy_find<cr>
 nnoremap <leader>fd <cmd>Telescope find_files hidden=true no_ignore=true<cr>
+nnoremap <leader>xd <cmd>Telescope diagnostics<cr>
+nnoremap <leader>xs <cmd>Telescope lsp_document_symbols<cr>
+nnoremap <leader>xq <cmd>Telescope quickfix<cr>
+nnoremap <leader>xl <cmd>Telescope loclist<cr>
+nnoremap <leader>gc <cmd>Telescope git_commits<cr>
+nnoremap <leader>gs <cmd>Telescope git_status<cr>
+nnoremap gR <cmd>Telescope lsp_references<cr>
 
 
 "------------------end telescope-----------------
@@ -452,6 +437,10 @@ EOF
 "----------------------end word illuminate
 
 lua << EOF
+    vim.g.loaded_netrw = 1
+    vim.g.loaded_netrwPlugin = 1
+    vim.opt.termguicolors = true
+
     require("nvim-tree").setup {
         view = {
             width = 40,
@@ -488,6 +477,14 @@ smap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' 
 "  -----------------end luasnip------------
 
 
+" =================start zen-mode----------------
+lua << EOF
+require("zen-mode").setup {
+    }
+EOF
+" -------------------end zen-mode------------------
+
+
 lua << EOF
 require('goto-preview').setup {default_mappings = true}
 EOF
@@ -521,7 +518,7 @@ nnoremap * :keepjumps normal! mi*`i<CR>
 
 lua << EOF
 vim.diagnostic.config({
-  virtual_text = false,
+  virtual_text = true,
 })
 EOF
 lua require('leap').add_default_mappings()
