@@ -241,19 +241,19 @@ require'nvim-treesitter.configs'.setup {
       enable = true,
       set_jumps = true, -- whether to set jumps in the jumplist
       goto_next_start = {
-        ["]m"] = "@function.outer",
+        ["]f"] = "@function.outer",
         ["]]"] = "@class.outer",
       },
       goto_next_end = {
-        ["]M"] = "@function.outer",
+        ["]F"] = "@function.outer",
         ["]["] = "@class.outer",
       },
       goto_previous_start = {
-        ["[m"] = "@function.outer",
+        ["[f"] = "@function.outer",
         ["[["] = "@class.outer",
       },
       goto_previous_end = {
-        ["[M"] = "@function.outer",
+        ["[F"] = "@function.outer",
         ["[]"] = "@class.outer",
       },
     },
@@ -261,9 +261,9 @@ require'nvim-treesitter.configs'.setup {
 }
 
 -- zc folding
-vim.wo.foldmethod = 'expr'
-vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
-vim.wo.foldlevel = 99
+-- vim.wo.foldmethod = 'expr'
+-- vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
+-- vim.wo.foldlevel = 99
 
 require'treesitter-context'.setup()
 EOF
@@ -348,7 +348,7 @@ end
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 local servers = { 'ltex','bashls','gopls','pyright', 'tsserver',
-'ccls', 'jsonls', 'lemminx', 'vimls'}
+'ccls', 'jsonls', 'lemminx', 'vimls', 'taplo'}
 for _, lsp in pairs(servers) do
   require('lspconfig')[lsp].setup {
     on_attach = on_attach,
