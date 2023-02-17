@@ -16,7 +16,7 @@ set $down j
 set $up k
 set $right l
 # Your preferred terminal emulator
-set $term WINIT_UNIX_BACKEND=x11 /usr/bin/alacritty
+set $term /usr/bin/alacritty
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
@@ -32,8 +32,8 @@ font pango: SourceCodePro Medium 14
 # output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 
 # move to next workspace
-bindsym $mod+Ctrl+h workspace prev
-bindsym $mod+Ctrl+l workspace next
+bindsym $mod+Ctrl+h workspace prev_on_output
+bindsym $mod+Ctrl+l workspace next_on_output
 
 # WIP. for future use
 bindsym $mod2+Control+Right move workspace to output right
@@ -41,20 +41,29 @@ bindsym $mod2+Control+Left move workspace to output left
 bindsym $mod2+Control+Down move workspace to output down
 bindsym $mod2+Control+Up move workspace to output up
 
-#output DP-1 scale 2 pos 1080 427
-#output HDMI-A-2 prime
+output DP-1 scale 2 pos 1080 427
+output HDMI-A-2 transform 90 pos 0 0
 
 # 804 monitor config
-output eDP-1 pos 1920 0
-output HDMI-A-2 pos 0 0
+#output eDP-1 pos 1920 0
+#output HDMI-A-2 pos 0 0
 
 
 # bind workspace to monitors
-workspace 1 output eDP-1
-workspace 2 output eDP-1
-workspace 3 output eDP-1
-workspace 4 output eDP-1
-workspace music output eDP-1
+workspace 1 output DP-1
+workspace 2 output DP-1
+workspace 3 output DP-1
+workspace 4 output DP-1
+workspace  output DP-1
+workspace   output DP-1
+workspace  output DP-1
+workspace ⛩ output DP-1
+workspace 🗞 output DP-1
+workspace GG output DP-1
+workspace 🕮 output DP-1
+workspace 📝 output DP-1
+
+workspace music output DP-1
 workspace 6 output HDMI-A-2
 workspace 7 output HDMI-A-2
 
@@ -117,19 +126,20 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
 # Basics:
 #
     # bindsym $mod+p exec chromium --enable-features=UseOzonePlatform --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080" 
-    bindsym $mod+n exec thunar
-    bindsym $mod+p exec firefox #--private-window
+    bindsym $mod+n exec doublecmd #thunar
+    bindsym $mod+p exec firefox 
     # Start a terminal
     bindsym $mod+Return exec $term
 
     # start librewolf
     bindsym $mod+o exec librewolf
     # start element
-    bindsym $mod2+e exec element-desktop --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
-    #bindsym $mod2+e exec http_proxy=socks5h://127.0.0.1:1080 https_proxy=socks5h://127.0.0.1:1080 nheko
+    #bindsym $mod2+Shift+e exec element-desktop --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
+    bindsym $mod2+Shift+e exec element-desktop-nightly --ozone-platform=wayland --proxy-server="socks5://127.0.0.1:1080"
+    #bindsym $mod2+Shift+e exec proxychains4 -q nheko
 
     # start music
-    bindsym $mod2+m exec /opt/YesPlayMusic/yesplaymusic --enable-features=UseOzonePlatform --ozone-platform=wayland --gtk-version=4
+    bindsym $mod2+Shift+m exec /opt/YesPlayMusic/yesplaymusic --enable-features=UseOzonePlatform --ozone-platform=wayland --gtk-version=4
     # start rss
     #bindsym $mod2+f exec https_proxy=socks5://127.0.0.1:1080 http_proxy=socks5://127.0.0.1:1080 newsflash
 
@@ -193,10 +203,7 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
     bindsym --no-repeat $mod+8 workspace number 8; 
     bindsym --no-repeat $mod+9 workspace number 9; 
     bindsym --no-repeat $mod+0 workspace number 10;
-    bindsym --no-repeat $mod+Shift+t workspace ; 
-    bindsym --no-repeat $mod+Shift+m workspace 🎧;
-    bindsym --no-repeat $mod+Shift+d workspace ⓦ; 
-    bindsym --no-repeat $mod+Shift+y workspace !; 
+    bindsym $mod2+e workspace 
     bindsym $mod2+f workspace  
     bindsym $mod2+w workspace 
     bindsym $mod2+c workspace ⛩
@@ -207,6 +214,8 @@ bindsym $mod2+l exec swaylock -f -i /home/mys/Pictures/plant-onion.png
     bindsym $mod2+p workspace ⬜
     bindsym $mod2+s workspace obs
     bindsym $mod2+n workspace note
+    bindsym --no-repeat $mod2+d workspace ⓦ; 
+    bindsym --no-repeat $mod2+m workspace 🎧;
 
     bindsym --no-repeat $mod2+1 workspace number 11; 
     bindsym --no-repeat $mod2+2 workspace number 12; 
@@ -334,6 +343,7 @@ bindsym $mod+m exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 # grim - | wl-copy
 # install slurp grim
 bindsym $mod+q exec grim -g "$(slurp)" - | swappy -f -
+bindsym $mod2+q exec wgifcap
 
 input "type:keyboard" {
     xkb_options ctrl:nocaps
