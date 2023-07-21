@@ -33,13 +33,17 @@ call plug#begin('~/.vim/plugged')
     Plug 'rmagatti/goto-preview'
     Plug 'simrat39/symbols-outline.nvim'
     Plug 'RRethy/vim-illuminate'
-    Plug 'L3MON4D3/LuaSnip'
+    Plug 'simrat39/rust-tools.nvim'
+    Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*', 'do': 'make install_jsregexp'} 
     Plug 'ggandor/leap.nvim'
+    Plug 'cloudysake/swap-split.nvim'
     Plug 'folke/zen-mode.nvim'
+    "Plug 'github/copilot.vim'
 
 
 call plug#end()
 
+"set fileencodings=utf-8,gbk
 set termguicolors
 let mapleader = ","
 set tabstop=4 softtabstop=4
@@ -90,6 +94,9 @@ set shortmess+=c
 " Give more space for displaying messages
 set cmdheight=1
 
+" Remap command line window
+"nnoremap :: q:
+
 " easy expansion of the active file directory
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 
@@ -121,6 +128,10 @@ lua << END
 require('lualine').setup()
 END
 
+"-----------swap splits-----------------
+nnoremap <leader>S <cmd>SwapSplit<CR>
+"----------end splits-------------------
+"
 
 "  ----------------git -----------------
 lua << EOF
@@ -320,30 +331,34 @@ vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr)
-  -- Enable completion triggered by <c-x><c-o>
-  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+  callback = function(ev)
+    -- Enable completion triggered by <c-x><c-o>
+    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
 
-  -- Mappings.
-  -- See `:help vim.lsp.*` for documentation on any of the below functions
-  local bufopts = { noremap=true, silent=true, buffer=bufnr }
-  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-  vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
-  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-  vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-  vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-  vim.keymap.set('n', '<space>wl', function()
-    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-  end, bufopts)
-  vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
-  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-  vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-  vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
-  
-end
+    -- Buffer local mappings.
+    -- See `:help vim.lsp.*` for documentation on any of the below functions
+    local opts = { buffer = ev.buf }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+    vim.keymap.set('n', '<space>wl', function()
+      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    end, opts)
+    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', '<space>f', function()
+      vim.lsp.buf.format { async = true }
+    end, opts)
+  end,
+})
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
@@ -359,14 +374,25 @@ for _, lsp in pairs(servers) do
   }
 end
 
-require('lspconfig')['rust_analyzer'].setup {
-    on_attach = on_attach,
-    settings = {
-        ["rust-analyzer"] = {}
-    }
-}
 EOF
 "---------------end lsp------------------
+
+" -------------rust tools --------------
+lua << EOF
+local rt = require("rust-tools")
+
+rt.setup({
+  server = {
+    on_attach = function(_, bufnr)
+      -- Hover actions
+      vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
+      -- Code action groups
+      vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
+    end,
+  },
+})
+EOF
+"  --------------end rust tools-=---------
 
 "-------------------coq-----------------
 " set jump_to_mark to a key
@@ -375,15 +401,15 @@ let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 "------------------end coq-----------------
 
 "----------------------null-ls-----------------
-lua << EOF
-  require("null-ls").setup({
-  debug = false,
-    sources = {
-        require("null-ls").builtins.formatting.black.with({ extra_args = {"--fast", "-l 79"} }),
-        require("null-ls").builtins.diagnostics.flake8
-    },
-})
-EOF
+"lua << EOF
+  "require("null-ls").setup({
+  "debug = false,
+    "sources = {
+        "require("null-ls").builtins.formatting.black.with({ extra_args = {"--fast", "-l 79"} }),
+        "require("null-ls").builtins.diagnostics.flake8
+    "},
+"})
+"EOF
 "---------------------end null-ls---------
 
 " ------------------telescope----------------------
@@ -455,27 +481,29 @@ EOF
 
 " ----------------luasnip---------
 lua << EOF
-require("luasnip").config.set_config({
-    enable_autosnippets = true,
-    store_selection_keys = "<Tab>",
-})
+vim.keymap.set("i", "<c-j>", "<cmd>lua require('luasnip').jump(1)<CR>")
+vim.keymap.set("s", "<c-j>", "<cmd>lua require('luasnip').jump(1)<CR>")
+vim.keymap.set("i", "<c-k>", "<cmd>lua require('luasnip').jump(-1)<CR>")
+vim.keymap.set("s", "<c-k>", "<cmd>lua require('luasnip').jump(-1)<CR>")
 EOF
-" Expand or jump in insert mode
-imap <silent><expr> <Tab> luasnip#expand_or_jumpable() ? '<Plug>luasnip-expand-or-jump' : '<Tab>' 
- 
-" Jump forward through tabstops in visual mode
-smap <silent><expr> <Tab> luasnip#jumpable(1) ? '<Plug>luasnip-jump-next' : '<Tab>'
-" Jump backward through snippet tabstops with Shift-Tab (for example)
-imap <silent><expr> <S-Tab> luasnip#jumpable(-1) ? '<Plug>luasnip-jump-prev' : '<S-Tab>'
-smap <silent><expr> <S-Tab> luasnip#jumpable(-1) ? '<Plug>luasnip-jump-prev' : '<S-Tab>'
-" Cycle forward through choice nodes with Control-f (for example)
-imap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
-smap <silent><expr> <C-f> luasnip#choice_active() ? '<Plug>luasnip-next-choice' : '<C-f>'
-
-
 
 "  -----------------end luasnip------------
 
+" ----------------start ident_blankline---------------
+lua << EOF
+vim.opt.list = true
+vim.opt.listchars:append "space:⋅"
+vim.opt.listchars:append "eol:↴"
+
+require("indent_blankline").setup {
+    space_char_blankline = " ",
+    show_current_context = true,
+    show_current_context_start = true,
+}
+EOF
+
+"  ------------------end ident_blankline---------------
+"
 
 " =================start zen-mode----------------
 lua << EOF
@@ -496,6 +524,7 @@ nnoremap <leader>n :NvimTreeFindFile<CR>
 lua << EOF
     vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
     vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+
 EOF
 
 let g:vimtex_view_method = 'zathura'
@@ -505,6 +534,8 @@ let g:vimtex_quickfix_ignore_filters = [
             \'Warning.*Fandol', 
             \'Overfull', 'Underfull',
             \'Warning.*Font',
+            \'Warning.*Ignoring empty',
+            \'Warning.*\headheight is too',
             \'Warning.*font'
       \]
 let g:vimtex_compiler_latexmk_engines = {
@@ -523,7 +554,12 @@ vim.diagnostic.config({
 EOF
 lua require('leap').add_default_mappings()
 
+"lua << EOF
+""vim.g.copilot_no_tab_map = true
+""vim.g.copilot_assume_mapped = true
+"EOF
 
 set spell
 set spelllang=nl,en_us,cjk
 inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
+
