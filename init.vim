@@ -38,7 +38,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'ggandor/leap.nvim'
     Plug 'cloudysake/swap-split.nvim'
     Plug 'folke/zen-mode.nvim'
-    "Plug 'github/copilot.vim'
+    Plug 'mfussenegger/nvim-dap-python'
 
 
 call plug#end()
@@ -452,9 +452,60 @@ EOF
 "--------------------symbol outline end-------------------
 
 "-------------------start dap----------------
+lua require('dap-python').setup('~/master/机器学习/venv/bin/python')
 lua <<EOF
 require("dapui").setup()
 require("nvim-dap-virtual-text").setup()
+local dap, dapui = require("dap"), require("dapui")
+dap.listeners.after.event_initialized["dapui_config"] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+  dapui.close()
+end
+vim.keymap.set("n", "<Space>dt", ':DapToggleBreakpoint<CR>')
+vim.keymap.set("n", "<Space>dc", ':DapContinue<CR>')
+vim.keymap.set("n", "<Space>ds", ':DapStepInto<CR>')
+vim.keymap.set("n", "<Space>dS", ':DapStepOut<CR>')
+vim.keymap.set("n", "<Space>dq", ':DapTerminate<CR>')
+
+local dap = require('dap')
+dap.adapters.lldb = {
+  type = 'executable',
+  command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
+  name = 'lldb'
+}
+dap.configurations.cpp = {
+  {
+    name = 'Launch',
+    type = 'lldb',
+    request = 'launch',
+    program = function()
+      return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+    end,
+    cwd = '${workspaceFolder}',
+    stopOnEntry = false,
+    args = {},
+
+    -- 💀
+    -- if you change `runInTerminal` to true, you might need to change the yama/ptrace_scope setting:
+    --
+    --    echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+    --
+    -- Otherwise you might get the following error:
+    --
+    --    Error on launch: Failed to attach to the target process
+    --
+    -- But you should be aware of the implications:
+    -- https://www.kernel.org/doc/html/latest/admin-guide/LSM/Yama.html
+    -- runInTerminal = false,
+  },
+}
+dap.configurations.c = dap.configurations.cpp
+dap.configurations.rust = dap.configurations.cpp
 EOF
 "---------------------end dap-----------------------
 
