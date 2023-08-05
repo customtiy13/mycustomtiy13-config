@@ -1,47 +1,58 @@
-" Plug
-call plug#begin('~/.vim/plugged')
-
-    Plug 'ray-x/aurora'
-    Plug 'nvim-lualine/lualine.nvim'
-    Plug 'tpope/vim-fugitive'
-    Plug 'lewis6991/gitsigns.nvim'
-    Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
-    Plug 'preservim/nerdcommenter'
-    Plug 'windwp/nvim-autopairs'
-    Plug 'mhinz/vim-startify'
-    Plug 'lervag/vimtex'
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
-    Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-    Plug 'nvim-treesitter/nvim-treesitter-context'
-    Plug 'p00f/nvim-ts-rainbow'
-    Plug 'neovim/nvim-lspconfig'
-    Plug 'mfussenegger/nvim-dap'
-    Plug 'theHamsta/nvim-dap-virtual-text'
-    Plug 'rcarriga/nvim-dap-ui'
-    Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
-    Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
-    Plug 'kyazdani42/nvim-web-devicons'
-    Plug 'kyazdani42/nvim-tree.lua'
-    Plug 'nvim-lua/plenary.nvim'
-    Plug 'jose-elias-alvarez/null-ls.nvim'
-    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-    Plug 'nvim-telescope/telescope.nvim'
-    Plug 'mfussenegger/nvim-jdtls'
-    Plug 'lukas-reineke/indent-blankline.nvim'
-    Plug 'kylechui/nvim-surround'
-    Plug 'sindrets/diffview.nvim'
-    Plug 'rmagatti/goto-preview'
-    Plug 'simrat39/symbols-outline.nvim'
-    Plug 'RRethy/vim-illuminate'
-    Plug 'simrat39/rust-tools.nvim'
-    Plug 'L3MON4D3/LuaSnip', {'tag': 'v1.*', 'do': 'make install_jsregexp'} 
-    Plug 'ggandor/leap.nvim'
-    Plug 'cloudysake/swap-split.nvim'
-    Plug 'folke/zen-mode.nvim'
-    Plug 'mfussenegger/nvim-dap-python'
-
-
-call plug#end()
+lua << EOF
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+vim.g.mapleader = ","
+require("lazy").setup({
+    "ray-x/aurora",
+    "nvim-lualine/lualine.nvim",
+    "tpope/vim-fugitive",
+    "lewis6991/gitsigns.nvim",
+    {"iamcco/markdown-preview.nvim", ft = "markdown", build = "cd app && yarn install" },
+    "preservim/nerdcommenter",
+    "windwp/nvim-autopairs",
+    "mhinz/vim-startify",
+    {"lervag/vimtex", ft = "latex"},
+    "nvim-treesitter/nvim-treesitter", -- {"do": ":TSUpdate"},
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    "nvim-treesitter/nvim-treesitter-context",
+    "p00f/nvim-ts-rainbow",
+    "neovim/nvim-lspconfig",
+    "mfussenegger/nvim-dap",
+     "theHamsta/nvim-dap-virtual-text",
+     "rcarriga/nvim-dap-ui",
+     {"ms-jpq/coq_nvim", branch = "coq"},
+     {"ms-jpq/coq.artifacts", branch = "artifacts"},
+     "kyazdani42/nvim-web-devicons",
+     "kyazdani42/nvim-tree.lua",
+     "nvim-lua/plenary.nvim",
+     "jose-elias-alvarez/null-ls.nvim",
+     { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
+     "nvim-telescope/telescope.nvim",
+     {"mfussenegger/nvim-jdtls", ft="java"},
+     "lukas-reineke/indent-blankline.nvim",
+     "kylechui/nvim-surround",
+     "sindrets/diffview.nvim",
+     "rmagatti/goto-preview",
+     "simrat39/symbols-outline.nvim",
+     "RRethy/vim-illuminate",
+     {"simrat39/rust-tools.nvim", ft="rust"},
+     {"L3MON4D3/LuaSnip", tag =  "2.*", build =  "make install_jsregexp"} ,
+     "ggandor/leap.nvim",
+     "cloudysake/swap-split.nvim",
+     "folke/zen-mode.nvim",
+     "mfussenegger/nvim-dap-python",
+})
+EOF
 
 "set fileencodings=utf-8,gbk
 set termguicolors
@@ -132,6 +143,15 @@ END
 nnoremap <leader>S <cmd>SwapSplit<CR>
 "----------end splits-------------------
 "
+lua << END
+_G.StatusColumn = {}
+StatusColumn.set_window = function(value, defer, win)
+  vim.defer_fn(function()
+    win = win or vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_option(win, "statuscolumn", value)
+  end, defer or 1)
+end
+END
 
 "  ----------------git -----------------
 lua << EOF
@@ -414,10 +434,7 @@ let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 
 " ------------------telescope----------------------
 " Find files using Telescope command-line sugar.
-lua << EOF
-require("telescope").setup{}
-require('telescope').load_extension('fzf')
-EOF
+
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
 nnoremap <leader>fg <cmd>Telescope live_grep<cr>
 nnoremap <leader>fb <cmd>Telescope buffers<cr>
