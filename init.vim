@@ -1,3 +1,4 @@
+let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 lua << EOF
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -13,7 +14,13 @@ end
 vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = ","
 require("lazy").setup({
-    "ray-x/aurora",
+    -- "ray-x/aurora",
+    {
+      "folke/tokyonight.nvim",
+      lazy = false,
+      priority = 1000,
+      opts = {},
+    },
     "nvim-lualine/lualine.nvim",
     "tpope/vim-fugitive",
     "lewis6991/gitsigns.nvim",
@@ -21,6 +28,12 @@ require("lazy").setup({
     "preservim/nerdcommenter",
     "windwp/nvim-autopairs",
     "mhinz/vim-startify",
+    {
+      "andymass/vim-matchup",
+      setup = function()
+        vim.g.matchup_matchparen_offscreen = { method = "popup" }
+      end,
+    },
     {"lervag/vimtex", ft = "tex"},
     "nvim-treesitter/nvim-treesitter", -- {"do": ":TSUpdate"},
     "nvim-treesitter/nvim-treesitter-textobjects",
@@ -32,6 +45,7 @@ require("lazy").setup({
      "rcarriga/nvim-dap-ui",
      {"ms-jpq/coq_nvim", branch = "coq"},
      {"ms-jpq/coq.artifacts", branch = "artifacts"},
+     {'ms-jpq/coq.thirdparty', branch="3p"},
      "kyazdani42/nvim-web-devicons",
      "kyazdani42/nvim-tree.lua",
      "nvim-lua/plenary.nvim",
@@ -124,12 +138,13 @@ set cmdheight=1
 " easy expansion of the active file directory
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 
-let g:aurora_italic = 1     " italic
-let g:aurora_transparent = 1     " transparent
-let g:aurora_bold = 1     " bold
-let g:aurora_darker = 1     " darker background
+"let g:aurora_italic = 1     " italic
+"let g:aurora_transparent = 1     " transparent
+"let g:aurora_bold = 1     " bold
+"let g:aurora_darker = 1     " darker background
 
-colorscheme aurora
+"colorscheme aurora
+colorscheme tokyonight-moon
 
 highlight Normal guibg=none
 highlight NonText guibg=none
@@ -301,7 +316,12 @@ require'nvim-treesitter.configs'.setup {
         ["[]"] = "@class.outer",
       },
     },
-  }
+  },
+    matchup = {
+    enable = true,              -- mandatory, false will disable the whole extension
+    disable = { "ruby" },  -- optional, list of language that will be disabled
+    -- [options]
+  },
 }
 
 -- zc folding
@@ -406,6 +426,7 @@ for _, lsp in pairs(servers) do
     }
   }
 end
+require'lspconfig'.ocamllsp.setup{}
 
 EOF
 "---------------end lsp------------------
@@ -429,7 +450,10 @@ EOF
 
 "-------------------coq-----------------
 " set jump_to_mark to a key
-let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
+
+lua << EOF
+local coq = require("coq")
+EOF
 
 "------------------end coq-----------------
 
@@ -634,11 +658,6 @@ vim.diagnostic.config({
 })
 EOF
 lua require('leap').add_default_mappings()
-
-"lua << EOF
-""vim.g.copilot_no_tab_map = true
-""vim.g.copilot_assume_mapped = true
-"EOF
 
 set spell
 set spelllang=nl,en_us,cjk
