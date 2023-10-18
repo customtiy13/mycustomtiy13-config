@@ -22,7 +22,7 @@ require("lazy").setup({
       opts = {},
     },
     "nvim-lualine/lualine.nvim",
-    "tpope/vim-fugitive",
+    -- "tpope/vim-fugitive",
     "lewis6991/gitsigns.nvim",
     {"iamcco/markdown-preview.nvim", ft = "markdown", build = "cd app && yarn install" },
     "preservim/nerdcommenter",
@@ -35,10 +35,10 @@ require("lazy").setup({
       end,
     },
     {"lervag/vimtex", ft = "tex"},
-    "nvim-treesitter/nvim-treesitter", -- {"do": ":TSUpdate"},
+    {"nvim-treesitter/nvim-treesitter", build=":TSUpdate"},
     "nvim-treesitter/nvim-treesitter-textobjects",
     "nvim-treesitter/nvim-treesitter-context",
-    "p00f/nvim-ts-rainbow",
+    --"p00f/nvim-ts-rainbow",
     "neovim/nvim-lspconfig",
     "mfussenegger/nvim-dap",
      "theHamsta/nvim-dap-virtual-text",
@@ -53,7 +53,7 @@ require("lazy").setup({
      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
      "nvim-telescope/telescope.nvim",
      {"mfussenegger/nvim-jdtls", ft="java"},
-     "lukas-reineke/indent-blankline.nvim",
+     { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
      "kylechui/nvim-surround",
      "sindrets/diffview.nvim",
      "rmagatti/goto-preview",
@@ -144,7 +144,7 @@ cnoremap <expr> %% getcmdtype() == ':' ? expand('%:p:h').'/' : '%%'
 "let g:aurora_darker = 1     " darker background
 
 "colorscheme aurora
-colorscheme tokyonight-moon
+colorscheme tokyonight-storm
 
 highlight Normal guibg=none
 highlight NonText guibg=none
@@ -184,7 +184,7 @@ END
 "  ----------------git -----------------
 lua << EOF
 require('gitsigns').setup{
-  on_attach = function(bufnr)
+ on_attach = function(bufnr)
     local gs = package.loaded.gitsigns
 
     local function map(mode, l, r, opts)
@@ -195,20 +195,22 @@ require('gitsigns').setup{
 
     -- Navigation
     map('n', ']h', function()
-      if vim.wo.diff then return ']h' end
+      if vim.wo.diff then return ']c' end
       vim.schedule(function() gs.next_hunk() end)
       return '<Ignore>'
     end, {expr=true})
 
     map('n', '[h', function()
-      if vim.wo.diff then return '[h' end
+      if vim.wo.diff then return '[c' end
       vim.schedule(function() gs.prev_hunk() end)
       return '<Ignore>'
     end, {expr=true})
 
     -- Actions
-    map({'n', 'v'}, '<leader>hs', ':Gitsigns stage_hunk<CR>')
-    map({'n', 'v'}, '<leader>hr', ':Gitsigns reset_hunk<CR>')
+    map('n', '<leader>hs', gs.stage_hunk)
+    map('n', '<leader>hr', gs.reset_hunk)
+    map('v', '<leader>hs', function() gs.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
+    map('v', '<leader>hr', function() gs.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
     map('n', '<leader>hS', gs.stage_buffer)
     map('n', '<leader>hu', gs.undo_stage_hunk)
     map('n', '<leader>hR', gs.reset_buffer)
@@ -266,7 +268,7 @@ require'nvim-treesitter.configs'.setup {
     enable = false
   },
     rainbow = {
-    enable = true,
+    enable = false,
     -- disable = { "jsx", "cpp" }, list of languages you want to disable the plugin for
     extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
     max_file_lines = 200, -- Do not enable for files with more than n lines, int
@@ -542,7 +544,8 @@ dap.configurations.cpp = {
     end,
     cwd = '${workspaceFolder}',
     stopOnEntry = false,
-    args = {},
+    args = {} -- CAHNGE me.
+    
 
     -- 💀
     -- if you change `runInTerminal` to true, you might need to change the yama/ptrace_scope setting:
@@ -596,15 +599,7 @@ EOF
 
 " ----------------start ident_blankline---------------
 lua << EOF
-vim.opt.list = true
-vim.opt.listchars:append "space:⋅"
-vim.opt.listchars:append "eol:↴"
-
-require("indent_blankline").setup {
-    space_char_blankline = " ",
-    show_current_context = true,
-    show_current_context_start = true,
-}
+require("ibl").setup()
 EOF
 
 "  ------------------end ident_blankline---------------
