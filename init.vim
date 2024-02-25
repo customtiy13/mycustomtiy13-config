@@ -1,4 +1,3 @@
-let g:coq_settings = { 'auto_start': v:true, 'keymap.jump_to_mark': '<c-\>'}
 lua << EOF
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -43,12 +42,15 @@ require("lazy").setup({
     "mfussenegger/nvim-dap",
      "theHamsta/nvim-dap-virtual-text",
      "rcarriga/nvim-dap-ui",
-     {"ms-jpq/coq_nvim", branch = "coq"},
-     {"ms-jpq/coq.artifacts", branch = "artifacts"},
-     {'ms-jpq/coq.thirdparty', branch="3p"},
      "kyazdani42/nvim-web-devicons",
      "kyazdani42/nvim-tree.lua",
      "nvim-lua/plenary.nvim",
+ 'hrsh7th/nvim-cmp',
+ { 'hrsh7th/cmp-nvim-lsp', after = 'nvim-cmp' }, 
+ { 'hrsh7th/cmp-buffer', after = 'nvim-cmp' },        -- buffer auto-completion
+ { 'hrsh7th/cmp-path', after = 'nvim-cmp' },          -- path auto-completion
+ { 'hrsh7th/cmp-cmdline', after = 'nvim-cmp' },       -- cmdline auto-completion
+ 'saadparwaiz1/cmp_luasnip',
      "jose-elias-alvarez/null-ls.nvim",
      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
      "nvim-telescope/telescope.nvim",
@@ -374,6 +376,72 @@ EOF
 
 "-----------------------end pair--------------------
 
+"----------------start cmp -----------------------
+lua <<EOF
+  -- Set up nvim-cmp.
+  local cmp = require'cmp'
+
+  cmp.setup({
+    snippet = {
+      -- REQUIRED - you must specify a snippet engine
+      expand = function(args)
+        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      end,
+    },
+    window = {
+      -- completion = cmp.config.window.bordered(),
+      -- documentation = cmp.config.window.bordered(),
+    },
+    mapping = cmp.mapping.preset.insert({
+      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.abort(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    }),
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'vsnip' }, -- For vsnip users.
+      -- { name = 'luasnip' }, -- For luasnip users.
+      -- { name = 'ultisnips' }, -- For ultisnips users.
+      -- { name = 'snippy' }, -- For snippy users.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Set configuration for specific filetype.
+  cmp.setup.filetype('gitcommit', {
+    sources = cmp.config.sources({
+      { name = 'git' }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline({ '/', '?' }, {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+      { name = 'path' }
+    }, {
+      { name = 'cmdline' }
+    })
+  })
+EOF
+" -------------------end cmp---------------------
+
 "----------------lsp---------------------------
 lua << EOF
 -- Mappings.
@@ -417,6 +485,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
 local servers = { 'ltex','bashls','gopls','pyright', 'tsserver',
 'ccls', 'jsonls', 'lemminx', 'vimls', 'taplo'}
 for _, lsp in pairs(servers) do
@@ -425,7 +495,8 @@ for _, lsp in pairs(servers) do
     flags = {
       -- This will be the default in neovim 0.7+
       debounce_text_changes = 150,
-    }
+    },
+    capabilities = capabilities
   }
 end
 require'lspconfig'.ocamllsp.setup{}
@@ -449,15 +520,6 @@ rt.setup({
 })
 EOF
 "  --------------end rust tools-=---------
-
-"-------------------coq-----------------
-" set jump_to_mark to a key
-
-lua << EOF
-local coq = require("coq")
-EOF
-
-"------------------end coq-----------------
 
 "----------------------null-ls-----------------
 "lua << EOF
@@ -654,7 +716,7 @@ vim.diagnostic.config({
 EOF
 lua require('leap').add_default_mappings()
 
-set spell
-set spelllang=nl,en_us,cjk
+"set spell
+"set spelllang=nl,en_us,cjk
 inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
 
