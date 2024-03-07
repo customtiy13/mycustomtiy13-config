@@ -27,6 +27,7 @@ require("lazy").setup({
     "preservim/nerdcommenter",
     "windwp/nvim-autopairs",
     "mhinz/vim-startify",
+    {'akinsho/toggleterm.nvim', version = "*", config = true},
     {
       "andymass/vim-matchup",
       setup = function()
@@ -45,12 +46,12 @@ require("lazy").setup({
      "kyazdani42/nvim-web-devicons",
      "kyazdani42/nvim-tree.lua",
      "nvim-lua/plenary.nvim",
- 'hrsh7th/nvim-cmp',
- { 'hrsh7th/cmp-nvim-lsp', after = 'nvim-cmp' }, 
- { 'hrsh7th/cmp-buffer', after = 'nvim-cmp' },        -- buffer auto-completion
- { 'hrsh7th/cmp-path', after = 'nvim-cmp' },          -- path auto-completion
- { 'hrsh7th/cmp-cmdline', after = 'nvim-cmp' },       -- cmdline auto-completion
- 'saadparwaiz1/cmp_luasnip',
+     'hrsh7th/nvim-cmp',
+     { 'hrsh7th/cmp-nvim-lsp', after = 'nvim-cmp' }, 
+     { 'hrsh7th/cmp-buffer', after = 'nvim-cmp' },        -- buffer auto-completion
+     { 'hrsh7th/cmp-path', after = 'nvim-cmp' },          -- path auto-completion
+     { 'hrsh7th/cmp-cmdline', after = 'nvim-cmp' },       -- cmdline auto-completion
+     'saadparwaiz1/cmp_luasnip',
      "jose-elias-alvarez/null-ls.nvim",
      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
      "nvim-telescope/telescope.nvim",
@@ -338,6 +339,17 @@ EOF
 
 
 "-----------------------end treesitter-------------
+
+"----------- toggleterm --------------------------
+lua << EOF
+require("toggleterm").setup{
+  open_mapping = [[<c-t>]],
+  direction = "float",
+}
+
+EOF
+" --------------end toggleterm--------------------
+
 
 "--------------------auto pair---------------------
 lua << EOF
