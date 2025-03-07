@@ -21,10 +21,8 @@ require("lazy").setup({
       opts = {},
     },
     "nvim-lualine/lualine.nvim",
-    -- "tpope/vim-fugitive",
     "lewis6991/gitsigns.nvim",
     {"iamcco/markdown-preview.nvim", ft = "markdown", build = "cd app && yarn install" },
-    "preservim/nerdcommenter",
     "windwp/nvim-autopairs",
     "mhinz/vim-startify",
     {'akinsho/toggleterm.nvim', version = "*", config = true},
@@ -43,6 +41,7 @@ require("lazy").setup({
     "mfussenegger/nvim-dap",
      "theHamsta/nvim-dap-virtual-text",
      "rcarriga/nvim-dap-ui",
+     "nvim-neotest/nvim-nio",
      "kyazdani42/nvim-web-devicons",
      "kyazdani42/nvim-tree.lua",
      "nvim-lua/plenary.nvim",
@@ -52,7 +51,6 @@ require("lazy").setup({
      { 'hrsh7th/cmp-path', after = 'nvim-cmp' },          -- path auto-completion
      { 'hrsh7th/cmp-cmdline', after = 'nvim-cmp' },       -- cmdline auto-completion
      'saadparwaiz1/cmp_luasnip',
-     "jose-elias-alvarez/null-ls.nvim",
      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
      "nvim-telescope/telescope.nvim",
      {"mfussenegger/nvim-jdtls", ft="java"},
@@ -62,7 +60,6 @@ require("lazy").setup({
      "rmagatti/goto-preview",
      "simrat39/symbols-outline.nvim",
      "RRethy/vim-illuminate",
-     {"simrat39/rust-tools.nvim", ft="rust"},
      {"L3MON4D3/LuaSnip", version =  "2.*", build =  "make install_jsregexp"} ,
      "ggandor/leap.nvim",
      "cloudysake/swap-split.nvim",
@@ -114,6 +111,7 @@ set history=1000
 "  which will make it look like a target cross;
 set cursorline
 set cursorcolumn
+set mouse=
 
 " syntax on
 
@@ -460,8 +458,6 @@ lua << EOF
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
 local opts = { noremap=true, silent=true }
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 
 -- Use an on_attach function to only map the following keys
@@ -499,51 +495,62 @@ vim.api.nvim_create_autocmd('LspAttach', {
 -- map buffer local keybindings when the language server attaches
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-local servers = { 'ltex','bashls','gopls','pyright', 'tsserver',
+local servers = { 'ltex','bashls','gopls', 'ts_ls',
 'ccls', 'jsonls', 'lemminx', 'vimls', 'taplo'}
 for _, lsp in pairs(servers) do
   require('lspconfig')[lsp].setup {
     on_attach = on_attach,
     flags = {
       -- This will be the default in neovim 0.7+
-      debounce_text_changes = 150,
+      -- debounce_text_changes = 150,
     },
     capabilities = capabilities
   }
 end
+require'lspconfig'.pylsp.setup{
+  settings = {
+    pylsp = {
+      plugins = {
+        autopep8 = { enabled = true }, -- Use autopep8 for formatting
+        black = { enabled = true },    -- Use black for formatting
+        yapf = { enabled = true },     -- Use yapf for formatting
+      },
+    },
+  },
+}
 require'lspconfig'.ocamllsp.setup{}
+require'lspconfig'.rust_analyzer.setup{
+  settings = {
+    ["rust-analyzer"] = {
+      inlayHints = {
+        enable = true, -- Enable inlay hints
+        -- Customize inlay hints (optional)
+        typeHints = {
+          enable = true, -- Show type hints
+        },
+        parameterHints = {
+          enable = true, -- Show parameter hints
+        },
+        chainingHints = {
+          enable = true, -- Show chaining hints
+        },
+      },
+    },
+  },
+}
+
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client.name == 'rust-analyzer' then
+      vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+    end
+  end,
+})
 
 EOF
 "---------------end lsp------------------
 
-" -------------rust tools --------------
-lua << EOF
-local rt = require("rust-tools")
-
-rt.setup({
-  server = {
-    on_attach = function(_, bufnr)
-      -- Hover actions
-      vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
-      -- Code action groups
-      vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
-    end,
-  },
-})
-EOF
-"  --------------end rust tools-=---------
-
-"----------------------null-ls-----------------
-"lua << EOF
-  "require("null-ls").setup({
-  "debug = false,
-    "sources = {
-        "require("null-ls").builtins.formatting.black.with({ extra_args = {"--fast", "-l 79"} }),
-        "require("null-ls").builtins.diagnostics.flake8
-    "},
-"})
-"EOF
-"---------------------end null-ls---------
 
 " ------------------telescope----------------------
 " Find files using Telescope command-line sugar.
@@ -562,6 +569,7 @@ nnoremap <leader>xl <cmd>Telescope loclist<cr>
 nnoremap <leader>gc <cmd>Telescope git_commits<cr>
 nnoremap <leader>gs <cmd>Telescope git_status<cr>
 nnoremap gR <cmd>Telescope lsp_references<cr>
+
 
 
 "------------------end telescope-----------------
@@ -695,10 +703,11 @@ nnoremap <C-n> :NvimTreeToggle<CR>
 nnoremap <leader>r :NvimTreeRefresh<CR>
 nnoremap <leader>n :NvimTreeFindFile<CR>
 
+
 lua << EOF
     vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
     vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
-
+    vim.keymap.set('n', '<leader>h', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
 EOF
 
 let g:vimtex_view_method = 'zathura'
@@ -728,7 +737,7 @@ vim.diagnostic.config({
 EOF
 lua require('leap').add_default_mappings()
 
-"set spell
-"set spelllang=nl,en_us,cjk
+set spell
+set spelllang=en_us,cjk
 inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
 
