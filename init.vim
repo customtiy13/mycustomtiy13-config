@@ -42,14 +42,39 @@ require("lazy").setup({
             vim.g.no_plugin_maps = true
               end,
     },
+    {
+      'stevearc/oil.nvim',
+      opts = {},
+      -- 可选依赖，用于显示图标
+      dependencies = { "nvim-tree/nvim-web-devicons" },
+      config = function()
+        require("oil").setup({
+          -- 默认查看器
+          default_file_explorer = true,
+          -- 窗口配置
+          view_options = {
+            show_hidden = true, -- 显示隐藏文件（比如 .gitignore）
+          },
+          float = {
+                padding = 2,
+                max_width = 160,
+                max_height = 60,
+                border = "rounded",
+              },
+        keymaps = {
+            ["q"] = "actions.close", -- 设置 q 键直接关闭 Oil 并退回原文件
+            ["<C-p>"] = "actions.preview",
+          },
+        })
+            vim.keymap.set("n", "-", "<CMD>lua require('oil').open_float()<CR>", { desc = "Open oil in float" })
+      end
+    },
     'nvim-treesitter/nvim-treesitter-context',
     "neovim/nvim-lspconfig",
     "mfussenegger/nvim-dap",
      "theHamsta/nvim-dap-virtual-text",
      "rcarriga/nvim-dap-ui",
      "nvim-neotest/nvim-nio",
-     "nvim-tree/nvim-web-devicons",
-     "nvim-tree/nvim-tree.lua",
      "nvim-lua/plenary.nvim",
     {
       'saghen/blink.cmp',
@@ -84,7 +109,16 @@ require("lazy").setup({
       opts_extend = { "sources.default" }
     },
      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' },
-     "nvim-telescope/telescope.nvim",
+     {"nvim-telescope/telescope.nvim", 
+       dependencies = {
+       {
+                "nvim-telescope/telescope-live-grep-args.nvim" ,
+                -- This will not install any breaking changes.
+                -- For major updates, this must be adjusted manually.
+                version = "^1.0.0",
+		},
+            },
+       },
      {"mfussenegger/nvim-jdtls", ft="java"},
      { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} },
      "kylechui/nvim-surround",
@@ -445,7 +479,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
 
-    if client and client.supports_method("textDocument/documentHighlight") then
+    if client and client:supports_method("textDocument/documentHighlight") then
       local highlight_group = vim.api.nvim_create_augroup('lsp_document_highlight_' .. bufnr, { clear = true })
       
       -- 注册自动高亮
@@ -469,21 +503,43 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
-local servers = { 'ltex','bashls','gopls', 'ts_ls',
+local servers = { 'ltex','bashls','gopls', 'ts_ls','ruff',
 'jsonls','clangd', 'lemminx', 'vimls', 'taplo', "rust_analyzer"}
 for _, lsp in pairs(servers) do
     vim.lsp.enable(lsp)
 end
-vim.lsp.enable('pylsp', {
+
+vim.lsp.enable('pyright' ,{
   settings = {
-    pylsp = {
-      plugins = {
-        black = { enabled = true },    -- Use black for formatting
-      },
-    },
-  },
+    python = {
+      analysis = {
+        inlayHints = {
+          variableTypes = true,
+          functionReturnTypes = true,
+          callArgumentNames = true,
+        }
+      }
+    }
+  }
 })
-vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+
+-- vim.lsp.enable('pylsp', {
+--   settings = {
+--     pylsp = {
+--       plugins = {
+--         pyflakes = { enabled = true },
+--         pycodestyle = { enabled = true, maxLineLength = 100 },
+--         mccabe = { enabled = false },
+--         yapf = { enabled = false },
+--         black = { enabled = true },
+--         isort = { enabled = true },
+--         rope_completion = { enabled = true }
+--       },
+--     },
+--   },
+-- })
+-- vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+vim.lsp.inlay_hint.enable(true)
 
 
 EOF
@@ -494,10 +550,13 @@ EOF
 " Find files using Telescope command-line sugar.
 "
 lua << EOF
+local telescope = require('telescope')
 local actions = require('telescope.actions')
 
-require('telescope').setup{
+telescope.setup({
   defaults = {
+    -- Clean up the path display
+    path_display = { "truncate" },
     mappings = {
       i = {
         ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
@@ -506,26 +565,55 @@ require('telescope').setup{
       n = {
         ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
         ["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
-      }
+      },
+    },
+  },
+  extensions = {
+    live_grep_args = {
+      auto_quoting = true, -- Automatically puts quotes around your search
     }
   }
-}
-EOF
+})
 
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fi <cmd>Telescope git_files<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-nnoremap <leader>fc <cmd>Telescope current_buffer_fuzzy_find<cr>
-nnoremap <leader>fd <cmd>Telescope find_files hidden=true no_ignore=true<cr>
-nnoremap <leader>xd <cmd>Telescope diagnostics<cr>
-nnoremap <leader>xs <cmd>Telescope lsp_document_symbols<cr>
-nnoremap <leader>xq <cmd>Telescope quickfix<cr>
-nnoremap <leader>xl <cmd>Telescope loclist<cr>
-nnoremap <leader>gc <cmd>Telescope git_commits<cr>
-nnoremap <leader>gs <cmd>Telescope git_status<cr>
-nnoremap gR <cmd>Telescope lsp_references<cr>
+-- Load extensions after setup
+telescope.load_extension("live_grep_args")
+
+-- --- Modern Keymaps ---
+local builtin = require('telescope.builtin')
+local extensions = telescope.extensions
+
+-- Helper function for mapping
+local map = function(mode, lhs, rhs, desc)
+  vim.keymap.set(mode, lhs, rhs, { noremap = true, silent = true, desc = desc })
+end
+
+-- Search / Files
+map('n', '<leader>fi', builtin.git_files, "Find Git Files")
+map('n', '<leader>fc', builtin.current_buffer_fuzzy_find, "Fuzzy Search Buffer")
+map('n', '<leader>fd', function() 
+  builtin.find_files({ hidden = true, no_ignore = true }) 
+end, "Find All Files (Hidden/Ignored)")
+map('n', '<leader>ff', builtin.find_files, "Fuzzy file Buffer")
+map('n', '<leader>fb', builtin.buffers, "Fuzzy Buffer")
+
+-- The "Modern" Live Grep with Args
+map('n', '<leader>fs', extensions.live_grep_args.live_grep_args, "Live Grep with Args")
+map('n', '<leader>fg', builtin.live_grep,  'Telescope live grep')
+
+-- LSP / Diagnostics
+map('n', '<leader>xd', builtin.diagnostics, "Workspace Diagnostics")
+map('n', '<leader>xs', builtin.lsp_document_symbols, "LSP Symbols")
+map('n', 'gR', builtin.lsp_references, "LSP References")
+
+-- Lists
+map('n', '<leader>xq', builtin.quickfix, "Quickfix List")
+map('n', '<leader>xl', builtin.loclist, "Location List")
+
+-- Git
+map('n', '<leader>gc', builtin.git_commits, "Git Commits")
+map('n', '<leader>gs', builtin.git_status, "Git Status")
+
+EOF
 
 
 
@@ -589,20 +677,6 @@ EOF
 
 
 lua << EOF
-    vim.g.loaded_netrw = 1
-    vim.g.loaded_netrwPlugin = 1
-    vim.opt.termguicolors = true
-
-    require("nvim-tree").setup {
-        view = {
-            width = 40,
-            side="right"
-        },
-        update_focused_file = {
-            enable = true,
-            update_cwd = true,
-        }
-}
 EOF
 
 " ----------------luasnip---------
@@ -636,9 +710,6 @@ lua << EOF
 require('goto-preview').setup {default_mappings = true}
 EOF
 
-nnoremap <C-n> :NvimTreeToggle<CR>
-nnoremap <leader>r :NvimTreeRefresh<CR>
-nnoremap <leader>n :NvimTreeFindFile<CR>
 
 
 lua << EOF
